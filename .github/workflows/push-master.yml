@@ -34,68 +34,68 @@ jobs:
         ant -buildfile .github/workflows/build.xml -Dbasedir=`.`
         echo "core/jeka-output/distrib/bin" >> $GITHUB_PATH
 
-    - name: Publish to OSSRH snapshot
-      if: false
-      env:
-        JEKA_REPOS_PUBLISH_USERNAME: ${{ secrets.OSSRH_USER }}
-        JEKA_REPOS_PUBLISH_PASSWORD: ${{ secrets.OSSRH_PWD }}
-        JEKA_GPG_SECRET_KEY: ${{ secrets.GPG_SECRET_KEY}}
-        JEKA_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        PACKAGES_TOKEN: ${{ secrets.PACKAGES_TOKEN }}
-        GITHUB_BRANCH: ${{ github.ref }}
-      run: |
-        jeka maven: publish -D@nexus=on -D@nexus.readTimeout=90000 -cp=plugins/plugins.nexus/jeka-output/classes --inspect --stacktrace
+#    - name: Publish to OSSRH snapshot
+#      if: false
+#      env:
+#        JEKA_REPOS_PUBLISH_USERNAME: ${{ secrets.OSSRH_USER }}
+#        JEKA_REPOS_PUBLISH_PASSWORD: ${{ secrets.OSSRH_PWD }}
+#        JEKA_GPG_SECRET_KEY: ${{ secrets.GPG_SECRET_KEY}}
+#        JEKA_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+#        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#        PACKAGES_TOKEN: ${{ secrets.PACKAGES_TOKEN }}
+#        GITHUB_BRANCH: ${{ github.ref }}
+#      run: |
+#        jeka maven: publish -D@nexus=on -D@nexus.readTimeout=90000 -cp=plugins/plugins.nexus/jeka-output/classes --inspect --stacktrace
 
-    - name: Publish to Central Portal
-      if: startsWith(github.ref, 'refs/tags/')
-      env:
-        JEKA_CENTRAL_PORTAL_USERNAME: ${{ secrets.CENTRAL_PORTAL_USERNAME }}
-        JEKA_CENTRAL_PORTAL_PASSWORD: ${{ secrets.CENTRAL_PORTAL_PASSWORD }}
-        JEKA_CENTRAL_PORTAL_SIGN_KEY: ${{ secrets.GPG_SECRET_KEY}}
-        JEKA_CENTRAL_PORTAL_SIGN_KEY_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
-      run: |
-        jeka centralportal: publish -cp=plugins/plugins.centralportal/jeka-output/classes --inspect --stacktrace
+#    - name: Publish to Central Portal
+#      if: startsWith(github.ref, 'refs/tags/')
+#      env:
+#        JEKA_CENTRAL_PORTAL_USERNAME: ${{ secrets.CENTRAL_PORTAL_USERNAME }}
+#        JEKA_CENTRAL_PORTAL_PASSWORD: ${{ secrets.CENTRAL_PORTAL_PASSWORD }}
+#        JEKA_CENTRAL_PORTAL_SIGN_KEY: ${{ secrets.GPG_SECRET_KEY}}
+#        JEKA_CENTRAL_PORTAL_SIGN_KEY_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+#      run: |
+#        jeka centralportal: publish -cp=plugins/plugins.centralportal/jeka-output/classes --inspect --stacktrace
 
-    - name: Publish to DockerHub
-      if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/')
-      env:
-        DOCKER_HUB_TOKEN: ${{ secrets.DOCKER_HUB }}
-      run: jeka -r core publishDockerImage
+#    - name: Publish to DockerHub
+#      if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/')
+#      env:
+#        DOCKER_HUB_TOKEN: ${{ secrets.DOCKER_HUB }}
+#      run: jeka -r core publishDockerImage
 
     - name: Enrich MkDocs
       if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/')
       run: |
         jeka build: enrichMkDocs
 
-    - name: Deploy MkDocs
-      if: startsWith(github.ref, 'refs/tags/')
-      uses: mhausenblas/mkdocs-deploy-gh-pages@master
-      env:
-        CONFIG_FILE: jeka-output/mkdocs/mkdocs.yml
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        REQUIREMENTS: .github/workflows/requirements.txt
+#    - name: Deploy MkDocs
+#      if: startsWith(github.ref, 'refs/tags/')
+#      uses: mhausenblas/mkdocs-deploy-gh-pages@master
+#      env:
+#        CONFIG_FILE: jeka-output/mkdocs/mkdocs.yml
+#        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#        REQUIREMENTS: .github/workflows/requirements.txt
 
     - name: Add Javadoc to gh-pages
       if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/')
       run: jeka -r core addJavadocToGhPages --inspect --stacktrace
 
-    - name: Deploy gh-pages
-      if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/')
-      uses: peaceiris/actions-gh-pages@v4
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: core/jeka-output/gh-pages
+ #   - name: Deploy gh-pages
+ #     if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/')
+ #     uses: peaceiris/actions-gh-pages@v4
+ #     with:
+ #       github_token: ${{ secrets.GITHUB_TOKEN }}
+ #       publish_dir: core/jeka-output/gh-pages
         
-    - name: Deploy distrib to GITHUB Release
-      if: startsWith(github.ref, 'refs/tags/')
-      uses: svenstaro/upload-release-action@v2
-      with:
-        repo_token: ${{ secrets.GITHUB_TOKEN }}
-        file: core/jeka-output/dev.jeka.jeka-core-distrib.zip
-        asset_name: distrib.zip
-        tag: ${{ github.ref }}
-        overwrite: true
+#    - name: Deploy distrib to GITHUB Release
+#      if: startsWith(github.ref, 'refs/tags/')
+#      uses: svenstaro/upload-release-action@v2
+#      with:
+#        repo_token: ${{ secrets.GITHUB_TOKEN }}
+#        file: core/jeka-output/dev.jeka.jeka-core-distrib.zip
+#        asset_name: distrib.zip
+#        tag: ${{ github.ref }}
+#        overwrite: true
 
     - name: Save JeKa cache
       uses: actions/cache/save@v4
