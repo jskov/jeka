@@ -1,0 +1,25 @@
+#!/bin/bash
+
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
+CORE_SRC="$SCRIPT_DIR/core"
+OUT="$SCRIPT_DIR/jeka-bin"
+
+LAST_CHANGE_MARKER="$OUT/_last_changed"
+
+
+if (test ! -e "$LAST_CHANGE_MARKER" \
+    || test "${BASH_SOURCE[0]}" -nt "$LAST_CHANGE_MARKER" \
+    || (find "$CORE_SRC/jeka-boot" "$CORE_SRC/libs/compile-only" -newer "$LAST_CHANGE_MARKER" -print -quit | grep -q '.') \
+    || (find "$CORE_SRC/src/main/java/"                          -newer "$LAST_CHANGE_MARKER" -print -quit | grep -q '.')); then
+    echo "Recompiling Local Jeka"
+    rm -rf "$OUT"
+    mkdir -p "$OUT"
+
+    javac -cp $(find "$CORE_SRC/jeka-boot" "$CORE_SRC/libs/compile-only" -name \*.jar | tr '\n' ':') -d "$OUT" $(find "$CORE_SRC/src/main/java/" -name \*.java | tr '\n' ' ')
+    (cd "$CORE_SRC"/src/main/java/; find -type d -exec mkdir -p "$OUT/{}" \;)
+    (cd "$CORE_SRC"/src/main/java/; find -type f -not -name \*.java -not -name .DS_Store -exec cp "{}" "$OUT/{}" \;)
+    touch $LAST_CHANGE_MARKER
+fi
+
+java -cp $(find "$CORE_SRC/jeka-boot" "$CORE_SRC/libs/compile-only" -name \*.jar | tr '\n' ':')"$OUT" dev.jeka.core.tool.Main "$@"
